@@ -159,6 +159,9 @@ namespace CocoWatcher
             ProcessRestart objProcessRestart = new ProcessRestart(process, address);
             Thread thread = new Thread(new ThreadStart(objProcessRestart.HangProcess));
             thread.Start();
+
+            Thread thread2 = new Thread(new ThreadStart(objProcessRestart.RestartProcess));
+            thread2.Start();
         }
 
 
@@ -314,6 +317,9 @@ namespace CocoWatcher
 
                     //Spy++获取Ghost窗体句柄
                     IntPtr formHandle = FindWindow("Ghost", null);
+
+                    //IntPtr formHandle = FindWindow("WindowsForms10.Window.8.app.0.141b42a_r26_ad1", null);
+
                     if (formHandle != IntPtr.Zero)
                     {
                         Console.WriteLine("GHOST~~~");
@@ -327,8 +333,8 @@ namespace CocoWatcher
                         {
                             this._process.Kill();
                             this._process.Close();    //释放已退出进程的句柄
-                            this._process.StartInfo.FileName = this._address;
-                            this._process.Start();
+                            //this._process.StartInfo.FileName = this._address;
+                            //this._process.Start();
                         }
                     }
 
