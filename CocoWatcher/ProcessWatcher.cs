@@ -267,16 +267,16 @@ namespace CocoWatcher
             {
                 while (true)
                 {
-                    Point point = new Point(0, 0);
-                    GetCursorPos(ref point);
+                    //Point point = new Point(0, 0);
+                    //GetCursorPos(ref point);
 
-                    //1.根据位置获取窗口句柄：    
-                    IntPtr formHandle = WindowFromPoint(point);//得到窗口句柄  p为当前位置（Point）            
-                    StringBuilder title = new StringBuilder(256);
-                    //2.根据句柄获取窗口标题：    
-                    GetWindowText(formHandle, title, title.Capacity);//得到窗口的标题
+                    ////1.根据位置获取窗口句柄：    
+                    //IntPtr formHandle = WindowFromPoint(point);//得到窗口句柄  p为当前位置（Point）            
+                    //StringBuilder title = new StringBuilder(256);
+                    ////2.根据句柄获取窗口标题：    
+                    //GetWindowText(formHandle, title, title.Capacity);//得到窗口的标题
 
-                    Console.WriteLine($"TITLE-{title}");
+                    //Console.WriteLine($"TITLE-{title}");
 
                     this._process.WaitForExit();
                     this._process.Close();    //释放已退出进程的句柄
