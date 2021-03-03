@@ -156,12 +156,15 @@ namespace CocoWatcher
         /// <param name="address"></param>
         private void WatchProcess(Process process, string address)
         {
-            ProcessRestart objProcessRestart = new ProcessRestart(process, address);
+            ProcessHandler objProcessRestart = new ProcessHandler(process, address);
             Thread thread = new Thread(new ThreadStart(objProcessRestart.HangProcess));
             thread.Start();
 
             Thread thread2 = new Thread(new ThreadStart(objProcessRestart.RestartProcess));
             thread2.Start();
+
+            Thread thread3 = new Thread(new ThreadStart(objProcessRestart.WerFaultProcess));
+            thread3.Start();
         }
 
 
@@ -232,7 +235,7 @@ namespace CocoWatcher
     }
 
 
-    public class ProcessRestart
+    public class ProcessHandler
     {
         //字段
         private Process _process;
@@ -242,7 +245,7 @@ namespace CocoWatcher
         /// <summary>
         /// 构造函数
         /// </summary>
-        public ProcessRestart()
+        public ProcessHandler()
         { }
 
 
@@ -251,7 +254,7 @@ namespace CocoWatcher
         /// </summary>
         /// <param name="process"></param>
         /// <param name="address"></param>
-        public ProcessRestart(Process process, string address)
+        public ProcessHandler(Process process, string address)
         {
             this._process = process;
             this._address = address;
@@ -343,13 +346,67 @@ namespace CocoWatcher
                 catch (Exception exp)
                 {
                     ProcessWatcher objProcessWatcher = new ProcessWatcher();
-                    objProcessWatcher.SaveLog("RestartProcess() 出错，监控程序已取消对进程("
+                    objProcessWatcher.SaveLog("HangProcess() 出错，监控程序已取消对进程("
                         + this._process.Id.ToString() + ")(" + this._process.ProcessName.ToString()
                         + ")的监控，错误描述为：" + exp.Message.ToString());
                 }
                 finally
                 {
                     Thread.Sleep(1000 * 3);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 已停止工作进程监控
+        /// </summary>
+        public void WerFaultProcess()
+        {
+            while (true)
+            {
+                try
+                {
+
+                    Process[] arrayProcess = Process.GetProcesses();
+                    foreach (Process process in arrayProcess)
+                    {
+                        //System、Idle进程会拒绝访问其全路径
+                        if (process.ProcessName != "System" && process.ProcessName != "Idle")
+                        {
+                            try
+                            {
+                                var fileName = process.MainModule.FileName?.ToLower() ?? "";
+
+                                if (fileName.Contains("werfault.exe"))
+                                {
+                                    process.Kill();
+                                    process.Close();
+
+                                    this._process.Kill();
+                                    this._process.Close(); 
+                                }
+                            }
+                            catch
+                            {
+                                //拒绝访问进程的全路径
+                                ProcessWatcher objProcessWatcher = new ProcessWatcher();
+                                objProcessWatcher.SaveLog("WerFault-进程(" + process.Id.ToString() + ")(" + process.ProcessName.ToString() + ")拒绝访问全路径！");
+                            }
+                        }
+                    }
+
+                    Console.WriteLine("WerFault-NEXT~~~");
+                }
+                catch (Exception exp)
+                {
+                    ProcessWatcher objProcessWatcher = new ProcessWatcher();
+                    objProcessWatcher.SaveLog("WerFaultProcess() 出错，监控程序已取消对进程("
+                        + this._process.Id.ToString() + ")(" + this._process.ProcessName.ToString()
+                        + ")的监控，错误描述为：" + exp.Message.ToString());
+                }
+                finally
+                {
+                    Thread.Sleep(1000 * 5);
                 }
             }
         }
